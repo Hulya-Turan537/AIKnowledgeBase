@@ -1,5 +1,7 @@
 
+using AIKnowledgeBase.Core.Interfaces;
 using AIKnowledgeBase.Data;
+using AIKnowledgeBase.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace AIKnowledgeBase.API
@@ -13,6 +15,9 @@ namespace AIKnowledgeBase.API
             // DbContext'i sisteme tanýtýyoruz
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            //sözleþme ile gerçeði birbirine baðlýyoruz
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             // Add services to the container.
 
