@@ -26,6 +26,8 @@ namespace AIKnowledgeBase.API
             //UnitOfWork'ü sisteme tanýtýyoruz, böylece istediðimiz yerde kullanabiliriz (örneðin, controllerlarda)
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+            builder.Services.AddScoped<IDocumentRepository, DocumentRepository>(); 
+
             // Add services to the container.
 
             builder.Services.AddControllers();

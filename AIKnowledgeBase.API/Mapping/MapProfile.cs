@@ -9,5 +9,6 @@ public class MapProfile : Profile
     {
         // User nesnesini UserDto ya , UserDto nesnesini de User nesnesine dönüştürmek için iki yönlü eşleme yapıyoruz
         CreateMap<User, UserDto>().ReverseMap(); // ReverseMap() ile iki yönlü eşleme sağlanır, yani User -> UserDto ve UserDto -> User dönüşümleri otomatik olarak yapılır
+        CreateMap<Document, DocumentDto>().ReverseMap();
     }
 }
