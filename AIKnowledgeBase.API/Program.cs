@@ -37,7 +37,13 @@ namespace AIKnowledgeBase.API
             builder.Services.AddAutoMapper(typeof(MapProfile)); // AutoMapper'ý sisteme tanýtýyoruz, MapProfile sýnýfýnda tanýmladýðýmýz eþlemeleri kullanarak nesneler arasýnda dönüþüm yapabiliriz
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "AIKnowledgeBase API", Version = "v1" });
+
+                // Çakýþan þemalarý engellemek için bu satýr KRÝTÝKTÝR:
+                c.CustomSchemaIds(type => type.FullName);
+            });
 
             var app = builder.Build();
 
@@ -50,6 +56,8 @@ namespace AIKnowledgeBase.API
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles(); // wwwroot klasöründeki statik dosyalarý sunmak için middleware ekliyoruz
 
             app.UseAuthorization();
 

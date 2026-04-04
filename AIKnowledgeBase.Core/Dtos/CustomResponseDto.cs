@@ -13,9 +13,9 @@ public class CustomResponseDto<T>
     public int StatusCode { get; set; } // HTTP durum kodu
 
     //Başarılı durumlar için yardımcı metotlar (static Factory Methodlar)
-    public static CustomResponseDto<T> Success(int statusCode, T data)
+    public static CustomResponseDto<T> Success(int statusCode, T dataContent)
     {
-        return new CustomResponseDto<T> { Data = data, StatusCode = statusCode };
+        return new CustomResponseDto<T> { Data = dataContent, StatusCode = statusCode };
     }
 
     public static CustomResponseDto<T> Fail(int statusCode, List<string> errors)

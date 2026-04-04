@@ -24,17 +24,35 @@ namespace AIKnowledgeBase.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateDocument(DocumentDto documentDto)
+        [HttpPost("upload")]
+        public async Task<IActionResult> CreateDocument(IFormFile file, int userId)
         {
-            // DTO yu gerçek entitye çeviriyoruz
-            var document = _mapper.Map<Document>(documentDto);
-            document.CreatedDate = DateTime.Now;
+            //dosya geldi mi
+            if (file == null || file.Length == 0)
+                return BadRequest("Dosya seçilmedi.");
 
-            await _documentRepository.AddAsync(document);
-            await _unitOfWork.CommitAsync();
+            //kaydedilecek yolu belirliyoruz
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", file.FileName);
 
-            return Ok(CustomResponseDto<DocumentDto>.Success(201, documentDto));
+            //dosyayı fiziksel olarak klasöre kopyalıyoruz
+            using (var stream = new FileStream(path, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            //veritanına kaydetmek için Document entitysi oluşturuyoruz
+            var document = new Document
+            {
+                FileName = file.FileName,
+                FilePath = "/uploads/" + file.FileName, //dosyanın erişim yolu, bu yolu frontendde kullanacağız
+                UserId = userId,
+                CreatedDate = DateTime.Now
+            };
+
+            await _documentRepository.AddAsync(document); //entityi ekliyoruz
+            await _unitOfWork.CommitAsync(); //değişiklikleri kaydediyoruz
+            var documentDto = _mapper.Map<DocumentDto>(document); //entityi DTOya çeviriyoruz
+            return Ok(CustomResponseDto<DocumentDto>.Success(201, documentDto)); //standart yanıt paketimizle dönüyoruz
         }
 
         [HttpGet("user/{userId}")]
