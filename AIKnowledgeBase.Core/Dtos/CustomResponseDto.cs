@@ -18,6 +18,12 @@ public class CustomResponseDto<T>
         return new CustomResponseDto<T> { Data = dataContent, StatusCode = statusCode };
     }
 
+    // Bu metot, geri veri döndürmek istemediğimiz (NoContent) durumlar içindir
+    public static CustomResponseDto<T> Success(int statusCode)
+    {
+        return new CustomResponseDto<T> { StatusCode = statusCode };
+    }
+
     public static CustomResponseDto<T> Fail(int statusCode, List<string> errors)
     {
         return new CustomResponseDto<T> { StatusCode = statusCode, Errors = errors };
