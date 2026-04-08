@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AIKnowledgeBase.Core\AIKnowledgeBase.Core.csproj" />
     <ProjectReference Include="..\AIKnowledgeBase.Data\AIKnowledgeBase.Data.csproj" />
+    <ProjectReference Include="..\AIKnowledgeBase.Service\AIKnowledgeBase.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

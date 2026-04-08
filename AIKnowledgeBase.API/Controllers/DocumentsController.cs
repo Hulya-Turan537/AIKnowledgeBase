@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 
 
+
 namespace AIKnowledgeBase.API.Controllers
 {
     [Route("api/[controller]")]
@@ -17,13 +18,22 @@ namespace AIKnowledgeBase.API.Controllers
         private readonly IDocumentRepository _documentRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper; 
+        private readonly IDocumentService _documentService;
+        private readonly IAIService _aiService;
 
 
-        public DocumentsController(IDocumentRepository documentRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        public DocumentsController(
+            IDocumentRepository documentRepository,
+            IUnitOfWork unitOfWork,
+            IMapper mapper, 
+            IDocumentService documentService,
+            IAIService aiService)
         {
             _documentRepository = documentRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _documentService = documentService;
+            _aiService = aiService;
         }
 
         [HttpPost("upload")]
@@ -89,6 +99,40 @@ namespace AIKnowledgeBase.API.Controllers
             }
         }
 
+
+        [HttpPost("{id}/ask")]
+        public async Task<IActionResult> AskQuestionToDocument(int id, [FromBody] string question)
+        {
+            var document = await _documentRepository.GetByIdAsync(id);
+            if (document == null) return NotFound("Döküman bulunamadı.");
+
+            //fiziksel yolu oluştur ve dökümanı metne çevir
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", document.FilePath.TrimStart('/'));
+            var documentText = await _documentService.GetTextFromFileAsync(fullPath);
+
+            //okunan metni ve kuulanıcı sorusunu AI servisine gönder ve cevabı al
+            try
+            {
+                var aiResponse = await _aiService.AnalyzeTextAsync(documentText, question);
+
+                return Ok(new { Answer = aiResponse });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"AI analizi sırasında bir hata oluştu: {ex.Message}");
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetDocumentsByUserId(int userId)
         {
@@ -105,6 +149,30 @@ namespace AIKnowledgeBase.API.Controllers
             return Ok(CustomResponseDto<List<DocumentDto>>.Success(200, documentsDto));
 
            
+        }
+
+        [HttpGet("{id}/content")]
+        public async Task<IActionResult> GetDocumentContent(int id)
+        {
+            //  Veritabanından dökümanı bul
+            var document = await _documentRepository.GetByIdAsync(id);
+            if (document == null) return NotFound("Döküman bulunamadı.");
+
+            //  Dosyanın fiziksel tam yolunu oluştur
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", document.FilePath.TrimStart('/'));
+
+            //  Servisimizi kullanarak metni oku
+            try
+            {
+                var text = await _documentService.GetTextFromFileAsync(fullPath);
+
+                // Okunan metni geri dön
+                return Ok(new { Content = text });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Dosya okunurken hata oluştu: {ex.Message}");
+            }
         }
 
         [HttpPut]

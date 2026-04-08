@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using AIKnowledgeBase.Service.Services;
 
 namespace AIKnowledgeBase.API
 {
@@ -27,6 +28,10 @@ namespace AIKnowledgeBase.API
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddScoped<IDocumentRepository, DocumentRepository>(); 
+
+            builder.Services.AddScoped<IDocumentService, DocumentService>();
+
+            builder.Services.AddScoped<IAIService, GeminiService>();
 
             // Add services to the container.
 
