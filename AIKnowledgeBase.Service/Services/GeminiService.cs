@@ -18,6 +18,8 @@ namespace AIKnowledgeBase.Service.Services
             // 1. Anahtarı appsettings.json'dan alıyoruz
             _apiKey = configuration["Gemini:ApiKey"];
 
+            Console.WriteLine($"DEBUG: API Key okundu mu?: {!string.IsNullOrEmpty(_apiKey)}");
+
             // 2. HttpClient'ı başlatıyoruz (En sağlam ağ aracıdır)
             _httpClient = new HttpClient();
         }
@@ -27,7 +29,10 @@ namespace AIKnowledgeBase.Service.Services
             try
             {
                 // 3. Console'da başarılı olan o URL ve Model ismini kullanıyoruz
-                string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_apiKey}";
+                 string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_apiKey}";
+                //string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={_apiKey}";
+
+
 
                 // 4. Prompt (Yapay zekaya giden talimat seti)
                 var promptText = $"Aşağıdaki döküman metnini incele ve kullanıcının sorusunu cevapla.\n\n" +
