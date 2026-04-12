@@ -26,9 +26,12 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         await _dbSet.AddAsync(entity); // Yeni bir varlık ekler
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync()
+    public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null)
     {
-        return await _dbSet.ToListAsync(); // Tüm varlıkları listeler halinde getirir
+        // Eğer filtre boşsa (null) tüm listeyi dön, doluysa filtreleyip dön
+        return filter == null
+            ? await _dbSet.ToListAsync()
+            : await _dbSet.Where(filter).ToListAsync();
     }
 
     public async Task<T> GetByIdAsync(int id)

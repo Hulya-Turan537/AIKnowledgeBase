@@ -77,14 +77,19 @@ namespace AIKnowledgeBase.API.Controllers
                     await file.CopyToAsync(stream);
                 }
 
-                //veritanına kaydetmek için Document entitysi oluşturuyoruz
-                var document = new Document
+                //kaydettiğimiz pdf anında okuyup metne çeviriyoruz
+
+                var extractedText = await _documentService.GetTextFromFileAsync(path);
+                 var document = new Document
                 {
                     FileName = file.FileName,
                     FilePath = "/uploads/" + newFileName, //dosyanın erişim yolu, bu yolu frontendde kullanacağız
                     UserId = userId,
+                    Content = extractedText,
                     CreatedDate = DateTime.Now
+                    
                 };
+
 
                 await _documentRepository.AddAsync(document); //entityi ekliyoruz
                 await _unitOfWork.CommitAsync(); //değişiklikleri kaydediyoruz
@@ -101,26 +106,19 @@ namespace AIKnowledgeBase.API.Controllers
 
 
         [HttpPost("{id}/ask")]
-        public async Task<IActionResult> AskQuestionToDocument(int id, [FromBody] string question)
+        public async Task<IActionResult> AskQuestion(int id, [FromBody] string question)
         {
-            var document = await _documentRepository.GetByIdAsync(id);
-            if (document == null) return NotFound("Döküman bulunamadı.");
-
-            //fiziksel yolu oluştur ve dökümanı metne çevir
-            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", document.FilePath.TrimStart('/'));
-            var documentText = await _documentService.GetTextFromFileAsync(fullPath);
-
-            //okunan metni ve kuulanıcı sorusunu AI servisine gönder ve cevabı al
-            try
+            //Gelen soruyu kontrol ediyoruz
+            if (string.IsNullOrWhiteSpace(question))
             {
-                var aiResponse = await _aiService.AnalyzeTextAsync(documentText, question);
+                return BadRequest("Lütfen bir soru yazın.");
+            }
 
-                return Ok(new { Answer = aiResponse });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"AI analizi sırasında bir hata oluştu: {ex.Message}");
-            }
+            //İş mantığını yürütmesi için Service katmanını çağırıyoruz
+            var response = await _documentService.AskQuestionAsync(id, question);
+
+            // AI'nın cevabını kullanıcıya dönüyoruz
+            return Ok(new { Answer = response });
         }
 
 

@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AIKnowledgeBase.Core.Entities;
+
 
 namespace AIKnowledgeBase.Service.Services
 {
@@ -24,34 +26,39 @@ namespace AIKnowledgeBase.Service.Services
             _httpClient = new HttpClient();
         }
 
-        public async Task<string> AnalyzeTextAsync(string documentText, string userQuestion)
+        public async Task<string> AnalyzeTextAsync(string documentText, string userQuestion, List<ChatMessage> history)
         {
             try
             {
-                // 3. Console'da başarılı olan o URL ve Model ismini kullanıyoruz
+                //  URL ve Model ismini kullanıyoruz
                  string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_apiKey}";
-                //string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={_apiKey}";
 
 
+                //Gemini'nin anlayacağı formatta geçmişi ve yeni soruyu hazırlıyoruz
+                var chatParts = new List<object>();
 
-                // 4. Prompt (Yapay zekaya giden talimat seti)
-                var promptText = $"Aşağıdaki döküman metnini incele ve kullanıcının sorusunu cevapla.\n\n" +
-                                 $"Döküman Metni: {documentText}\n\n" +
-                                 $"Kullanıcı Sorusu: {userQuestion}";
+                //önce dökümanı ve geçmişini yüklüyoruz
+                foreach (var msg in history)
+                {
+                    chatParts.Add(new
+                    {
+                        role = msg.Role == "user" ? "user" : "model",
+                        parts = new[] { new { text = msg.Content } }
+                    });
+                }
+
+                //En sona da güncel dökümanı ve soruyu ekliyoruz (Bu Gemini'nin son odaklanacağı yer olur)
+                chatParts.Add(new
+                {
+                    role = "user",
+                    parts = new[] { new { text = $"Döküman içeriğine göre cevapla: {documentText}\n\nSoru: {userQuestion}" } }
+                });
 
                 // 5. Google'ın beklediği JSON formatını oluşturuyoruz
                 var requestBody = new
                 {
-                    contents = new[]
-                    {
-                        new
-                        {
-                            parts = new[]
-                            {
-                                new { text = promptText }
-                            }
-                        }
-                    }
+                    contents = chatParts //tek bir parça değil tüm liste gidiyor
+                    
                 };
 
                 var jsonPayload = JsonSerializer.Serialize(requestBody);
@@ -75,7 +82,7 @@ namespace AIKnowledgeBase.Service.Services
                     .GetProperty("text")
                     .GetString();
 
-                return aiResponseText;
+                return aiResponseText ?? "Cevap alınamadı";
             }
             catch (Exception ex)
             {

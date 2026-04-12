@@ -10,5 +10,7 @@ namespace AIKnowledgeBase.Core.Interfaces
     {
         //dosya yolunu vereceğiz o bize içindeki metni string olarak dönecek
         Task<string> GetTextFromFileAsync(string filePath);
+
+        Task<string> AskQuestionAsync(int documentId, string question);
     }
 }

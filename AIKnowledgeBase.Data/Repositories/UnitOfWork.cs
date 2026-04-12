@@ -15,6 +15,12 @@ public class UnitOfWork : IUnitOfWork
         _context = context; // veritabanı bağlantısını alıyoruz
     }
 
+    // Repository'yi her seferinde yeni bir örnek olarak oluşturup döner
+    public IGenericRepository<T> GetRepository<T>() where T : class
+    {
+        return new GenericRepository<T>(_context);
+    }
+
     //tek bir tuşla her şeyi veritabanına kaydeder
     public async Task CommitAsync()
     {

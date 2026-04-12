@@ -11,7 +11,7 @@ public interface IGenericRepository<T> where T : class
 {
     Task<T> GetByIdAsync(int id); // T tipindeki veriyi id'ye göre asenkron olarak getirir
 
-    Task<IEnumerable<T>> GetAllAsync(); // T tipindeki tüm verileri listeler halinde asenkron olarak getirir
+    Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null); // T tipindeki tüm verileri listeler halinde asenkron olarak getirir
 
     Task AddAsync(T entity); // T tipindeki yeni bir veriyi asenkron olarak ekler
     void Update(T entity); // T tipindeki mevcut bir veriyi günceller
