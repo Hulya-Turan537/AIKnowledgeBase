@@ -77,7 +77,7 @@ namespace AIKnowledgeBase.API.Controllers
                     await file.CopyToAsync(stream);
                 }
 
-                //kaydettiğimiz pdf anında okuyup metne çeviriyoruz
+                //eğer resimse DocumenService biz "[IMAGEFILE]: .. " dönecek,eğer pdf ise metnin kendisini dönecek
 
                 var extractedText = await _documentService.GetTextFromFileAsync(path);
                  var document = new Document

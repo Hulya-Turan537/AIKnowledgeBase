@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AIKnowledgeBase.Core.Entities;
+using Microsoft.VisualBasic;
 
 
 namespace AIKnowledgeBase.Service.Services
@@ -26,10 +27,19 @@ namespace AIKnowledgeBase.Service.Services
             _httpClient = new HttpClient();
         }
 
-        public async Task<string> AnalyzeTextAsync(string documentText, string userQuestion, List<ChatMessage> history)
+        public async Task<string> AnalyzeTextAsync(string documentText, string userQuestion, List<ChatMessage> history, string? filePath = null)
         {
+
+            // LOG: Dışarıdan gerçekten ne geliyor görelim
+            Console.WriteLine($"--- AI ANALİZ BAŞLADI ---");
+            Console.WriteLine($"Gelen filePath: '{(filePath ?? "NULL")}'");
+            Console.WriteLine($"Gelen documentText ilk 20 karakter: '{documentText.Substring(0, Math.Min(20, documentText.Length))}'");
+
+
             try
             {
+               
+
                 //  URL ve Model ismini kullanıyoruz
                  string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_apiKey}";
 
@@ -47,11 +57,47 @@ namespace AIKnowledgeBase.Service.Services
                     });
                 }
 
+                var currentParts = new List<object>();
+
+                //eğer bir resim dosyasıysa, resmi Base64 formatına çevirip özel bir token ile gönderiyoruz, böylece Gemini resmi de anlayabilir
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    Console.WriteLine($"SİSTEM: Resim moduna girildi. Yol: {filePath}");
+
+
+                    byte[] imageBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                    string base64Image = Convert.ToBase64String(imageBytes);
+
+                    Console.WriteLine("-----------------------------------------");
+                    Console.WriteLine($"DOSYA YOLU: {filePath}");
+                    Console.WriteLine($"RESİM BOYUTU (Byte): {imageBytes.Length}");
+                    Console.WriteLine("-----------------------------------------");
+
+
+
+                    // Dosya uzantısına göre mime_type'ı dinamik belirleyelim (Profesyonel yaklaşım)
+                    string extension = Path.GetExtension(filePath).ToLower();
+                    string mimeType = (extension == ".png") ? "image/png" : "image/jpeg";
+
+                    currentParts.Add(new { inline_data = new {mime_type = mimeType, data = base64Image} });
+                    //currentParts.Add(new { text = $"Bu görseli analiz et ve şu soruya cevap ver: {userQuestion}" });
+                    currentParts.Add(new
+                    {
+                        text = "Sen profesyonel bir döküman analiz asistanısın. Ekteki görsel teknik bir doküman veya ders notudur. " +
+               "Lütfen bu görseldeki metinleri, diyagramları ve başlıkları dikkatlice analiz ederek şu soruyu cevapla: " + userQuestion
+                    });
+                }
+                else
+                {
+                    //normal metin mesajıysa direkt ekliyoruz
+                    currentParts.Add(new { text = $"Döküman içeriğine göre cevapla: {documentText}\n\nSoru: {userQuestion}" });
+                }
+
                 //En sona da güncel dökümanı ve soruyu ekliyoruz (Bu Gemini'nin son odaklanacağı yer olur)
                 chatParts.Add(new
                 {
                     role = "user",
-                    parts = new[] { new { text = $"Döküman içeriğine göre cevapla: {documentText}\n\nSoru: {userQuestion}" } }
+                    parts = currentParts 
                 });
 
                 // 5. Google'ın beklediği JSON formatını oluşturuyoruz

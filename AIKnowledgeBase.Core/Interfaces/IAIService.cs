@@ -13,6 +13,9 @@ namespace AIKnowledgeBase.Core.Interfaces
         //Task<string> AnalyzeTextAsync(string documentText, string userQuestion);
 
         //artık geçmiş mesajları da (ChatMessage listesi) alacak şekilde güncelliyoruz
-        Task<string> AnalyzeTextAsync(string documentText, string userQuestion, List<ChatMessage> history);
+        //Task<string> AnalyzeTextAsync(string documentText, string userQuestion, List<ChatMessage> history);
+
+        //hem metin hem resim anlizini destekleyen yeni metod
+        Task<string> AnalyzeTextAsync(string documentText, string userQuestion, List<ChatMessage> history, string? filePath = null);
     }
 }
