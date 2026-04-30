@@ -17,6 +17,6 @@ public class Document : BaseEntity
     public int UserId { get; set; } // Belgeyi yükleyen kullanıcının ID'si
     public User User { get; set; } // Belgeyi yükleyen kullanıcıyla ilişki
 
-    public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+    public ICollection<DocumentTag> DocumentTags { get; set; } 
 }
 

@@ -10,5 +10,5 @@ public class  Tag : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
 
-       public ICollection<Document> Documents { get; set; } = new List<Document>();
+       public ICollection<DocumentTag> DocumentTags { get; set; }
 }
