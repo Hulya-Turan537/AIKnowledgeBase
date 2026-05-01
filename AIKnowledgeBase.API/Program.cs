@@ -33,6 +33,10 @@ namespace AIKnowledgeBase.API
 
             builder.Services.AddScoped<IAIService, GeminiService>();
 
+            builder.Services.AddScoped<ITagRepository, TagRepository>();
+
+            builder.Services.AddScoped<ITagService, TagService>();
+
             // Add services to the container.
 
             builder.Services.AddControllers();

@@ -34,7 +34,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             : await _dbSet.Where(filter).ToListAsync();
     }
 
-    public async Task<T> GetByIdAsync(int id)
+    virtual public async Task<T?> GetByIdAsync(int id)
     {
         return await _dbSet.FindAsync(id);
     }

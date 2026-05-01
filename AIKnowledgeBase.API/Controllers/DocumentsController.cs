@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 
 
+
 namespace AIKnowledgeBase.API.Controllers
 {
     [Route("api/[controller]")]
@@ -20,20 +21,22 @@ namespace AIKnowledgeBase.API.Controllers
         private readonly IMapper _mapper; 
         private readonly IDocumentService _documentService;
         private readonly IAIService _aiService;
-
+        private readonly ITagService _tagService;
 
         public DocumentsController(
             IDocumentRepository documentRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper, 
             IDocumentService documentService,
-            IAIService aiService)
+            IAIService aiService,
+            ITagService tagService)
         {
             _documentRepository = documentRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _documentService = documentService;
             _aiService = aiService;
+            _tagService = tagService;
         }
 
         [HttpPost("upload")]
@@ -225,6 +228,23 @@ namespace AIKnowledgeBase.API.Controllers
            await _unitOfWork.CommitAsync(); //değişiklikleri kaydediyoruz
 
             return Ok(CustomResponseDto<NoContentDto>.Success(204));
+        }
+
+
+        [HttpPost("{documentId}/suggest-tags")]
+        public async Task<IActionResult> SuggestAndAssignTags(int documentId)
+        {
+            var tags = await _tagService.GetSuggestTagsForDocumentAsync(documentId);
+
+
+            if (tags == null || !tags.Any())
+            {
+                return BadRequest("AI tarafından önerilen etiketler alınamadı veya döküman bulunamadı");
+            }
+
+            await _tagService.AssignTagsToDocumentAsync(documentId, tags);
+
+            return Ok(new {Message = "Etiketler başarıyla oluşturuldu ve dökümanla ilişkilendirildi.", Tags = tags });
         }
 
 
