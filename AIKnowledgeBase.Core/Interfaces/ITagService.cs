@@ -14,5 +14,9 @@ namespace AIKnowledgeBase.Core.Interfaces
 
         //alınan etiketleri dökümana bağlayacak metod
         Task AssignTagsToDocumentAsync(int documentId, List<string> tagNames);
+
+        Task<bool> RemoveTagFromDocumentAsync(int documentId, int tagId);
+        Task<bool> AddManualTagToDocumentAsync(int documentId, string tagName);
+        Task<List<Object>> GetTagsByDocumentIdAsync(int documentId);
     }
 }

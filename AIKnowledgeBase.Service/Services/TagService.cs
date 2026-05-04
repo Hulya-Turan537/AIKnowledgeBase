@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AIKnowledgeBase.Core.Entities;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace AIKnowledgeBase.Service.Services
 {
@@ -92,7 +93,44 @@ namespace AIKnowledgeBase.Service.Services
             }
 
 
+        }
 
+        public async Task<bool> RemoveTagFromDocumentAsync(int documentId, int tagId)
+        {
+            var document = await _documentRepository.GetByIdAsync(documentId);
+            if (document == null) return false;
+
+            //dökümanın etiketleri arasında bu tagId ye sahip olanı bul
+            var tagToRemove = document.DocumentTags.FirstOrDefault(dt => dt.TagId == tagId);
+
+            if (tagToRemove != null)
+            {
+                document.DocumentTags.Remove(tagToRemove);
+                await _tagRepository.SaveAsync();
+                return true;
+            }
+            return false;
+        }
+
+
+        public async Task<bool> AddManualTagToDocumentAsync(int documentId, string tagName)
+        {
+            await AssignTagsToDocumentAsync(documentId, new List<string> { tagName });
+            return true;
+        }
+
+        public async Task<List<Object>> GetTagsByDocumentIdAsync(int documentId)
+        {
+            var document = await _documentRepository.GetByIdAsync(documentId);
+            if (document == null) return new List<object>();
+
+            return document.DocumentTags
+        .Select(dt => new
+        {
+            Id = dt.TagId,
+            Name = dt.Tag != null ? dt.Tag.Name : "İsimsiz Etiket"
+        })
+        .ToList<object>();
         }
     }
 }

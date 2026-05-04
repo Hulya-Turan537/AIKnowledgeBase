@@ -23,9 +23,14 @@ public class  DocumentRepository : GenericRepository<Document>, IDocumentReposit
     //GenericRepsitorydeki GetByIdAsynci eziyoruz ki ınclude ekleyebilelim
     public override async Task<Document?> GetByIdAsync(int id)
     {
+        //return await _context.Documents
+        //    .Include(d => d.DocumentTags)
+        //    .FirstOrDefaultAsync(x => x.Id == id);
+
         return await _context.Documents
-            .Include(d => d.DocumentTags)
-            .FirstOrDefaultAsync(x => x.Id == id);
+    .Include(d => d.DocumentTags)      // Önce köprü tabloyu dahil et
+        .ThenInclude(dt => dt.Tag)    // Sonra köprüden gerçek etiket tablosuna geç
+    .FirstOrDefaultAsync(d => d.Id == id);
     }
 
     public async Task<List<Document>> GetDocumentsByUserIdAsync(int userId)
@@ -34,6 +39,8 @@ public class  DocumentRepository : GenericRepository<Document>, IDocumentReposit
         return await _context.Documents
             .Include(d => d.DocumentTags)
             .Where(x => x.UserId == userId).ToListAsync();
+
+        
     }
 
 }
