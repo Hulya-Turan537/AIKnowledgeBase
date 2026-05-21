@@ -43,6 +43,15 @@ public class  DocumentRepository : GenericRepository<Document>, IDocumentReposit
         
     }
 
+    public async Task<List<Document>> GetDocumentsByTagNameAsync (string tagName)
+    {
+        return await _context.Documents
+            .Include(d => d.DocumentTags)
+            .ThenInclude(dt => dt.Tag)
+            .Where(d => d.DocumentTags.Any(dt => dt.Tag.Name == tagName))
+            .ToListAsync();
+    }
+
 }
 
 

@@ -11,4 +11,7 @@ namespace AIKnowledgeBase.Core.Interfaces;
 public interface IDocumentRepository : IGenericRepository<Document>
 {
     Task<List<Document>> GetDocumentsByUserIdAsync(int userId);
+
+    //Etiket ismine göre dökümanları getiren yeni imzamız
+    Task<List<Document>> GetDocumentsByTagNameAsync(string tagName);
 }

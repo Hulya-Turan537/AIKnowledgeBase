@@ -248,5 +248,25 @@ namespace AIKnowledgeBase.API.Controllers
         }
 
 
+        [HttpGet("search-by-tag")]
+        public async Task<IActionResult> SearchByTag([FromQuery] string tagName)
+        {
+            if (string.IsNullOrWhiteSpace(tagName))
+            {
+                return BadRequest("Etiket ismi boş olamaz");
+            }
+
+            var documents = await _documentRepository.GetDocumentsByTagNameAsync(tagName);
+
+            if(documents == null || !documents.Any())
+            {
+                return NotFound($"'{tagName}' etiketine sahip herhangi bir döküman bulunamadı.");
+            }
+
+            //burda dto kullanabiliiriz
+            return Ok(documents);
+        }
+
+
     }
 }
