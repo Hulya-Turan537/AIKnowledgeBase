@@ -123,8 +123,53 @@ namespace AIKnowledgeBase.Service.Services
         }
 
 
+        public async Task<AIKnowledgeBase.Core.Entities.Document> SaveAndProcessDocumentAsync(string fileName, string filePath, int userId)
+        {
+            // dosyadan metni oku(pdf ise metin, görsel ise yol döner(
+            string extractedContent = await GetTextFromFileAsync(filePath);
 
-           
+            // yapay zekaya özel özetleme promptu hazırla
+            string summaryPrompt = "Sen bir döküman özetleme asistanısın. Sana verilen döküman içeriğini analiz et ve en fazla 2 cümleden oluşan, dökümanın ne hakkında olduğunu belirten profosyonel bir özet çıkar. Asla 2 cümleyi geçme.";
+
+            //dosya uzantısını kontrol ediyoruz
+            string ext = Path.GetExtension(filePath).ToLower();
+            bool isImage = (ext == ".jpg" || ext == ".jpeg" || ext == ".png");
+
+            //eğer dosya görselse yolunu gönder, PDF ise null ki yukarıdaki if e girmesin
+            string aiSummary = await _aiService.AnalyzeTextAsync(
+                extractedContent,
+                summaryPrompt,
+                new List<ChatMessage>(), //özetleme için geçmişe gerek yok, boş liste gönderiyoruz
+                isImage ? filePath : null); //eğer görselse dosya yolunu gönder, değilse null gönder)
+
+            // veritabanına kaydedilecek nesneyi oluştur
+            var newDocument = new Document
+            {
+                FileName = fileName,
+                FilePath = filePath,
+                Content = extractedContent, //dökümanın tam metni
+                ContentSummary = aiSummary.Trim(), //yapay zekanın oluşturduğu özet
+                UserId = userId
+
+            };
+
+            // repository üzerinden veritabanına ekle ve UnitOfWork ile commit et
+            await _unitOfWork.GetRepository<Document>().AddAsync(newDocument);
+            await _unitOfWork.CommitAsync();
+
+            // oluşan dökümanı (ID'si de dahil) geri döndür
+            return newDocument;
         }
+
+
+
+
+
+
+
+
+
+
+    }
 }
 

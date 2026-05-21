@@ -82,20 +82,36 @@ namespace AIKnowledgeBase.API.Controllers
 
                 //eğer resimse DocumenService biz "[IMAGEFILE]: .. " dönecek,eğer pdf ise metnin kendisini dönecek
 
-                var extractedText = await _documentService.GetTextFromFileAsync(path);
-                 var document = new Document
-                {
-                    FileName = file.FileName,
-                    FilePath = "/uploads/" + newFileName, //dosyanın erişim yolu, bu yolu frontendde kullanacağız
-                    UserId = userId,
-                    Content = extractedText,
-                    CreatedDate = DateTime.Now
-                    
-                };
+
+                //-------------------------------------------------------------------------------------------------
+                //var extractedText = await _documentService.GetTextFromFileAsync(path);
+                // var document = new Document
+                //{
+                //    FileName = file.FileName,
+                //    FilePath = "/uploads/" + newFileName, //dosyanın erişim yolu, bu yolu frontendde kullanacağız
+                //    UserId = userId,
+                //    Content = extractedText,
+                //    CreatedDate = DateTime.Now
+
+                //};
 
 
-                await _documentRepository.AddAsync(document); //entityi ekliyoruz
-                await _unitOfWork.CommitAsync(); //değişiklikleri kaydediyoruz
+                //await _documentRepository.AddAsync(document); //entityi ekliyoruz
+                //await _unitOfWork.CommitAsync(); //değişiklikleri kaydediyoruz
+                //-----------------------------------------------------------------------------------------------------
+
+
+                //yeni akıllı mimariyle kaydetme ve yapay zeka analizi işlemini tek bir metotta yapıyoruz, böylece controller daha temiz ve iş mantığı service katmanında kalmış olur
+                var relativePath = "/uploads/" + newFileName; //veritabanında saklanacak yol, bu yolu frontendde kullanacağız
+
+                var document = await _documentService.SaveAndProcessDocumentAsync(file.FileName, path, userId);
+
+                //not: servis içinde FilePath parametresine fiziksel 'path' gönderdik çünkü AI okuyabilsin diye
+                //veritabnında ise erişim için relativePath saklıyoruz, bu şekilde frontendde kullanırken de sorun olmaz, AI işlemlerinde de dosyaya erişebiliriz
+                document.FilePath = relativePath;
+                _documentRepository.Update(document);
+                await _unitOfWork.CommitAsync();
+
 
                 var documentDto = _mapper.Map<DocumentDto>(document); //entityi DTOya çeviriyoruz
                 return Ok(CustomResponseDto<DocumentDto>.Success(201, documentDto)); //standart yanıt paketimizle dönüyoruz
