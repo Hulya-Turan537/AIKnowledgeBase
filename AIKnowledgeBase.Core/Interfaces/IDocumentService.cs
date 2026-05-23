@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+using AIKnowledgeBase.Core.Dtos;
 
 namespace AIKnowledgeBase.Core.Interfaces
 {
@@ -16,5 +17,7 @@ namespace AIKnowledgeBase.Core.Interfaces
 
         //bu metot dökümanı işleyecek, özetini çıkaracak ve UnitOfWork ile kaydedecek, böylece döküman veritabanında saklanacak ve daha sonra sorulara cevap verirken kullanılabilecek
         Task<AIKnowledgeBase.Core.Entities.Document> SaveAndProcessDocumentAsync(string fileName, string filePath, int userId);
+
+        Task<List<ChatMessageDto>> GetChatHistoryByDocumentIdAsync(int documentId);
     }
 }

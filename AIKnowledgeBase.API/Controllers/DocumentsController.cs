@@ -283,6 +283,14 @@ namespace AIKnowledgeBase.API.Controllers
             return Ok(documents);
         }
 
+        [HttpGet("{documentId}/chat-history")]
+        public async Task<IActionResult> GetChatHistory(int documentId)
+        {
+            var history = await _documentService.GetChatHistoryByDocumentIdAsync(documentId);
+
+            return Ok(CustomResponseDto<List<ChatMessageDto>>.Success(200, history));
+        }
+
 
     }
 }

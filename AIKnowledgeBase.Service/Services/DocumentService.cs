@@ -1,4 +1,5 @@
-﻿using AIKnowledgeBase.Core.Entities;
+﻿using AIKnowledgeBase.Core.Dtos;
+using AIKnowledgeBase.Core.Entities;
 using AIKnowledgeBase.Core.Interfaces;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
@@ -11,6 +12,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace AIKnowledgeBase.Service.Services
@@ -20,11 +23,18 @@ namespace AIKnowledgeBase.Service.Services
 
         private readonly IAIService _aiService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IGenericRepository<ChatMessage> _chatMessageRepository;
+        private readonly IMapper _mapper;
 
-        public DocumentService(IAIService aiService, IUnitOfWork unitOfWork)
+        public DocumentService(IAIService aiService, 
+                               IUnitOfWork unitOfWork,
+                               IGenericRepository<ChatMessage> chatMessageRepository,
+                               IMapper mapper)
         {
             _aiService = aiService;
             _unitOfWork = unitOfWork;
+            _chatMessageRepository = chatMessageRepository;
+            _mapper = mapper;
         }
 
 
@@ -159,6 +169,23 @@ namespace AIKnowledgeBase.Service.Services
 
             // oluşan dökümanı (ID'si de dahil) geri döndür
             return newDocument;
+        }
+
+
+        public async Task<List<ChatMessageDto>> GetChatHistoryByDocumentIdAsync(int documentId)
+        {
+            //repository üzerinden bu dökümana ait mesajları veritabaınında sorguluyoruz 
+            //CreatedDate parametresine göre eskiden yeniye(orderby) sıralıyoruz
+            var messages = await _chatMessageRepository
+                .Where(x => x.DocumentId == documentId)
+                .OrderBy(x => x.CreatedDate)
+                .ToListAsync();
+
+            //veritabanından gelen ham nesneleri (Entity) , AutoMapper ile DTO listesine dönüştürüyoruz
+            var messagesDto = _mapper.Map<List<ChatMessageDto>>(messages);
+
+            //tertemiz veriyi dış dünyaya dönüyoruz
+            return messagesDto;
         }
 
 
