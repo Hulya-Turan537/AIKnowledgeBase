@@ -19,5 +19,6 @@ namespace AIKnowledgeBase.Core.Interfaces
         Task<AIKnowledgeBase.Core.Entities.Document> SaveAndProcessDocumentAsync(string fileName, string filePath, int userId);
 
         Task<List<ChatMessageDto>> GetChatHistoryByDocumentIdAsync(int documentId);
+        Task<List<DocumentDto>> SearchDocumentsAsync(string searchTerm, int userId);
     }
 }

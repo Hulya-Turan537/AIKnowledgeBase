@@ -188,6 +188,23 @@ namespace AIKnowledgeBase.Service.Services
             return messagesDto;
         }
 
+        public async Task<List<DocumentDto>> SearchDocumentsAsync(string searchTerm, int userId)
+        {
+            // arama teriminin başındaki ve sonundaki boşlukları temizleyelim ve küçük harfe duyarlı hale getirmek için hazırlayalım
+            var term = searchTerm?.ToLower().Trim() ?? string.Empty;
+
+            //UnitOfWork üzerinden Document repositorysine ulaşaıyoruz
+            //veritanabında LINQ ile ToLower() ve Contains() metotları SQL tarafında otomatik olarak "LIKE" sorgusuna çevrilecektir
+            var documents = await _unitOfWork.GetRepository<Document>()
+                .GetAllAsync(x => x.UserId == userId &&
+                               ((x.FileName != null && x.FileName.ToLower().Contains(term)) ||
+                               (x.ContentSummary != null && x.ContentSummary.ToLower().Contains(term))));
+
+            //veritabanından gelen ham Document entity listesini AutoMapper ile DocumentDto listesine dönüştürüyoruz
+            var documentDto = _mapper.Map<List<DocumentDto>>(documents);
+            return documentDto;
+        }
+
 
 
 

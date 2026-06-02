@@ -292,5 +292,22 @@ namespace AIKnowledgeBase.API.Controllers
         }
 
 
+
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchDocuments([FromQuery] string searchTerm, [FromQuery] int userId)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return BadRequest("Arama terimi boş olamaz");
+            }
+
+            var results = await _documentService.SearchDocumentsAsync(searchTerm, userId);
+
+
+            return Ok(CustomResponseDto<List<DocumentDto>>.Success(200, results));
+        }
+
+
     }
 }
